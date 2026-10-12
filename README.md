@@ -14,7 +14,7 @@
 
 | 工具 | 版本 | 下载 | 什么时候用 |
 | --- | --- | --- | --- |
-| 一键诊断（推荐先试这个） | v1.6 | **[mc-oneclick-v1.6.zip](https://github.com/beihongliangchu/mctools/releases/download/2026.10.11-3/mc-oneclick-v1.6.zip)** | 双击一次，整合包、崩溃、Java、网络、**模组后门**全查完 |
+| 一键诊断（推荐先试这个） | v1.7 | **[mc-oneclick-v1.7.zip](https://github.com/beihongliangchu/mctools/releases/download/2026.10.12/mc-oneclick-v1.7.zip)** | 双击一次，整合包、崩溃、Java、网络、**模组后门**全查完 |
 | 崩溃日志分析 | v1.0 | **[crash-doctor-v1.0.zip](https://github.com/beihongliangchu/mctools/releases/download/2026.10.2/crash-doctor-v1.0.zip)** | 崩了，日志看不懂，不知道是哪个模组的问题 |
 | Java 环境诊断 | v1.0 | **[java-doctor-v1.0.zip](https://github.com/beihongliangchu/mctools/releases/download/2026.10.2/java-doctor-v1.0.zip)** | 不知道装了几个 Java、该用哪个、内存该给多少 |
 | 模组依赖检查 | v1.0 | **[mod-check-v1.0.zip](https://github.com/beihongliangchu/mctools/releases/download/2026.10.2/mod-check-v1.0.zip)** | 报缺前置、模组冲突、装重复了 |
@@ -28,7 +28,7 @@
 
 > 下载下来的文件名是英文的（`crash-doctor-v1.0.zip` 这样），因为 GitHub 不接受
 > 发布包名字里的中文。**解压之后的文件夹和文件仍然是中文名**，不影响使用。
-> 一键诊断那一份的资产名是 `mc-oneclick-v1.6.zip`。
+> 一键诊断那一份的资产名是 `mc-oneclick-v1.7.zip`。
 
 ## 一键诊断 mc-oneclick（一个入口，推荐）
 
@@ -270,6 +270,26 @@
 
 ## 更新日志
 
+### 2026.10.12 — 一键诊断 v1.7（老版本整合包也能认出游戏版本了）
+
+修好「认不出游戏版本」和「加载器读不到」——之前有一批整合包会报
+「没认出游戏版本，Java 只能按通用标准看」。三个根因：
+
+- 1.7.10 ～ 1.12.2 的版本行（`Forge Mod Loader version … for Minecraft 1.7.10 loading`）
+  **只写在 `logs\fml-client-latest.log`**，以前只读 `logs\latest.log`，老版本整合包全中招
+- PCL / HMCL 的隔离实例把版本清单命名成「实例文件夹名.json」而不是 `version.json`，
+  而且里面的 `id` 往往是实例名；旧逻辑一看不是版本号就整体放弃，
+  同一个文件里的 `clientVersion` / `assets` / `assetIndex` / Forge 库坐标一个都没用上
+- 「从 mods 里的模组元数据反推版本」这一步从来没实现过，
+  所以从没启动过的整合包永远只能报未识别
+
+现在会读 FML 客户端/服务端日志和轮转日志（FML 日志优先），认「文件夹名.json」，
+从 `clientVersion` / `assets` / `assetIndex` / Forge 库坐标里取版本与加载器，
+并补上了模组元数据反推。加载器识别还补了 1.20.1 之后的 `fmlloader` 坐标，
+Forge / NeoForge 版本号不再留空。
+
+本机 `versions\` 下 11 个实例全部回归通过；改之前有 4 个识别不正确。
+
 ### 2026.10.11 — 一键诊断 v1.6（文案调整）
 
 - 产出文件和界面文案统一成「发给帮助者」：
@@ -299,6 +319,7 @@
 | 第五期 | 用法改成"**把工具文件夹放进整合包文件夹里再双击**"，程序里"没找到整合包"那一屏同步改掉（v1.4） |
 | 第六期 | 新增「**检查模组安全**」：扫已知模组后门特征 + 那个伪装成 SSH 的开关文件（v1.5） |
 | 第七期 | 界面和产出文件名统一成「发给帮助者」，并加了一条打包自检（v1.6） |
+| 第八期 | 修好**老版本整合包认不出游戏版本**：改读 FML 日志、认「文件夹名.json」版本清单、补上模组元数据反推（v1.7） |
 
 设计上的两条硬规矩：
 
